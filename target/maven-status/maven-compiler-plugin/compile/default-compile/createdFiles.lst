@@ -1,0 +1,5 @@
+io/vertx/example/MainVerticle.class
+io/vertx/example/utils/FileCompress.class
+io/vertx/example/RequestContent.class
+io/vertx/example/FileContent.class
+io/vertx/example/Downloader.class
