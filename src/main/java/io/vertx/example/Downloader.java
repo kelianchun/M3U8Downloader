@@ -4,6 +4,8 @@ import io.vertx.core.AbstractVerticle;
 import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
+import io.vertx.core.net.ProxyOptions;
+import io.vertx.core.net.ProxyType;
 import io.vertx.example.utils.FileCompress;
 import io.vertx.ext.web.client.WebClient;
 import io.vertx.ext.web.client.WebClientOptions;
@@ -26,7 +28,7 @@ public class Downloader extends AbstractVerticle {
 
     private static final int POOL_SIZE = 100;
 
-    private static final String BASE_URL = "https://dalao.wahaha-kuyun.com/20201206/4055_c81d0698/1000k/hls/index.m3u8";
+    private static final String BASE_URL = "https://diaoshi.dehua-kuyun.com/20200929/17720_0abeb9c1/1000k/hls/index.m3u8";
 
     private static final String OUTPUT_FILE_NAME = "/Users/klc/Downloads/m3u8/test.mp4";
 
@@ -37,7 +39,11 @@ public class Downloader extends AbstractVerticle {
                 .setMaxPoolSize(POOL_SIZE)
                 .setTrustAll(true)
                 .setKeepAlive(true)
-                .setIdleTimeout(3000);
+                .setIdleTimeout(3000)
+                .setProxyOptions(new ProxyOptions()
+                        .setType(ProxyType.SOCKS5)
+                        .setHost("127.0.0.1")
+                        .setPort(7890));
         client = WebClient.create(vertx, options);
     }
 
@@ -75,7 +81,7 @@ public class Downloader extends AbstractVerticle {
                     if (retryTimes - 1 > 0) {
                         fetchFile(fc, retryTimes-1);
                     } else {
-                        log.error(err.getMessage());
+                        log.error("Download file" + fc.getFilePath() +" error " + err.getMessage());
                         promise.fail(err.getCause());
                     }
                 });
