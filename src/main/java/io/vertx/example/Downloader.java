@@ -28,7 +28,7 @@ public class Downloader extends AbstractVerticle {
 
     private static final String BASE_URL = "https://dalao.wahaha-kuyun.com/20201206/4055_c81d0698/1000k/hls/index.m3u8";
 
-    private static final String OUTPUT_FILE_NAME = "/opt/1.mp4";
+    private static final String OUTPUT_FILE_NAME = "/Users/klc/Downloads/m3u8/test.mp4";
 
     public void getWebClient() {
         WebClientOptions options = new WebClientOptions()

@@ -43,11 +43,6 @@ public class RequestContent {
         }
     }
 
-    public void getOutPutFile(FileSystem fileSystem) {
-
-
-    }
-
     public void removeFiles() {
         for (FileContent fileContent : fileContents) {
             Path filePath = new File(fileContent.getFilePath()).toPath();
