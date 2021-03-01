@@ -30,11 +30,14 @@ public class Downloader extends AbstractVerticle {
 
     private static final String OUTPUT_FILE_NAME = "/Users/klc/Downloads/m3u8/test.mp4";
 
+    private static final int RETRY_TIMES = 5;
+
     public void getWebClient() {
         WebClientOptions options = new WebClientOptions()
                 .setMaxPoolSize(POOL_SIZE)
                 .setTrustAll(true)
-                .setKeepAlive(true);
+                .setKeepAlive(true)
+                .setIdleTimeout(3000);
         client = WebClient.create(vertx, options);
     }
 
@@ -56,7 +59,7 @@ public class Downloader extends AbstractVerticle {
      * @param fc
      * @return Future
      */
-    public Future<String> fetchFile(FileContent fc) {
+    public Future<String> fetchFile(FileContent fc, int retryTimes) {
         Promise<String> promise = Promise.promise();
         this.client.getAbs(fc.getUrl())
                 .as(BodyCodec.buffer())
@@ -69,8 +72,12 @@ public class Downloader extends AbstractVerticle {
                             promise.fail(ar.cause());
                         }}))
                 .onFailure(err -> {
-                    log.error(err.getMessage());
-                    promise.fail(err.getCause());
+                    if (retryTimes - 1 > 0) {
+                        fetchFile(fc, retryTimes-1);
+                    } else {
+                        log.error(err.getMessage());
+                        promise.fail(err.getCause());
+                    }
                 });
         return promise.future();
     }
@@ -89,7 +96,7 @@ public class Downloader extends AbstractVerticle {
             try {
                 rc.setFileContents(itemList);
                 for(FileContent fc: rc.getFileContents()) {
-                    futureList.add(fetchFile(fc));
+                    futureList.add(fetchFile(fc, RETRY_TIMES));
                 }
             } catch (MalformedURLException e) {
                 log.error(e.getCause().getMessage());
