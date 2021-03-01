@@ -79,13 +79,39 @@ public class Downloader extends AbstractVerticle {
                         }}))
                 .onFailure(err -> {
                     if (retryTimes - 1 > 0) {
-                        fetchFile(fc, retryTimes-1);
+                        reFetchFile(fc, retryTimes-1, promise);
                     } else {
                         log.error("Download file" + fc.getFilePath() +" error " + err.getMessage());
                         promise.fail(err.getCause());
                     }
                 });
         return promise.future();
+    }
+
+    /**
+     * @param fc
+     * @return Future
+     */
+    public void reFetchFile(FileContent fc, int retryTimes, Promise<String> promise) {
+        this.client.getAbs(fc.getUrl())
+                .as(BodyCodec.buffer())
+                .send()
+                .onSuccess(res -> vertx.fileSystem().writeFile(fc.getFilePath(), res.bodyAsBuffer(), ar -> {
+                    if (ar.succeeded()) {
+                        promise.complete(fc.getFilePath());
+                    } else {
+                        log.error(ar.cause().getMessage());
+                        promise.fail(ar.cause());
+                    }
+                }))
+                .onFailure(err -> {
+                    if (retryTimes - 1 > 0) {
+                        reFetchFile(fc, retryTimes - 1, promise);
+                    } else {
+                        log.error("Download file" + fc.getFilePath() + " error " + err.getMessage());
+                        promise.fail(err.getCause());
+                    }
+                });
     }
 
     @Override
